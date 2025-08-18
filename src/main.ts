@@ -12,30 +12,30 @@ const db = new DatabaseService();
 const gemini = new GeminiService(config.GEMINI_API_KEY, config.aiResponders);
 const sessionManager = new WhatsAppSessionManager();
 
+// Check if we have a valid session
+const savedSession = sessionManager.getSession();
+if (savedSession) {
+  console.log("🔄 Attempting to use saved session...");
+} else {
+  console.log("📱 No saved session found, will need QR code");
+}
+
 const client = new Client({
   puppeteer: {
     executablePath: "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
+    // Add user data directory for session persistence
+    userDataDir: "./chrome-user-data",
   },
-  // Use session data if available
-  session: sessionManager.getSession()?.data || undefined,
+  // Add session persistence options
+  restartOnAuthFail: true,
+  takeoverOnConflict: true,
 });
 
 client.on("ready", () => {
   console.log("Client is ready!");
 
-  // Save session data for future use
-  if (client.info?.wid) {
-    // Get session data from the client's internal state
-    const sessionData =
-      (client as any).pupPage?.target()?._targetInfo?.targetId ||
-      client.info.wid._serialized;
-    sessionManager.saveSession(client.info.wid._serialized, {
-      wid: client.info.wid._serialized,
-      pushname: client.info.pushname,
-      timestamp: Date.now(),
-    });
-    console.log("💾 Session data saved for next startup");
-  }
+  // Session is automatically persisted by Chrome user data directory
+  console.log("✅ WhatsApp session automatically persisted");
 });
 
 client.on("qr", (qr: string) => {
