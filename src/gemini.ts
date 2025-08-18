@@ -6,10 +6,12 @@ import { buildWhatsAppPrompt } from "./prompts/index.ts";
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private model: any;
+  private aiResponders: string[];
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, aiResponders: string[]) {
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    this.aiResponders = aiResponders;
   }
 
   async generateResponse(
@@ -67,12 +69,11 @@ export class GeminiService {
   }
 
   async shouldRespond(message: string, authorName: string): Promise<boolean> {
-    // TESTING: Only respond to our own messages
-    if (authorName === "You" || authorName.includes("You")) {
-      return true;
-    }
+    // Check if the author is in our AI responders list
+    const shouldRespond = this.aiResponders.some(
+      (responder) => authorName === responder || authorName.includes(responder)
+    );
 
-    // Don't respond to other people's messages during testing
-    return false;
+    return shouldRespond;
   }
 }

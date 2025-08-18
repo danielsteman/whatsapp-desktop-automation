@@ -1,0 +1,8 @@
+{
+    "aiResponders": [
+        "Daniel Steman",
+        "You",
+        "Me"
+    ],
+    "description": "List of names/identifiers that should trigger AI responses from the WhatsApp bot"
+}

@@ -8,7 +8,7 @@ import { loadConfig } from "./config.ts";
 const config = await loadConfig();
 
 const db = new DatabaseService();
-const gemini = new GeminiService(config.GEMINI_API_KEY);
+const gemini = new GeminiService(config.GEMINI_API_KEY, config.aiResponders);
 const client = new Client({
   puppeteer: {
     executablePath: "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
@@ -73,30 +73,45 @@ client.on("message_create", async (message: any) => {
       console.log(`✅ Message stored in database`);
 
       // Check if we should generate an AI response
+      console.log(
+        `🔍 Checking if should respond to message from "${name}": "${message.body}"`
+      );
+
       if (await gemini.shouldRespond(message.body, name)) {
+        console.log(`✅ Decided to respond to message from "${name}"`);
+
         try {
           console.log("🤖 Generating AI response...");
 
           // Get conversation context
+          console.log(
+            `📚 Retrieving conversation context for chat: ${chat.id._serialized}`
+          );
           const context = await db.getMessagesForContext(
             chat.id._serialized,
             20
           );
+          console.log(`📚 Retrieved ${context.length} messages for context`);
 
           // Generate AI response
+          console.log("🧠 Calling Gemini API...");
           const aiResponse = await gemini.generateResponse(
             message.body,
             context,
             chat.isGroup,
             chat.isGroup ? chat.name : undefined
           );
+          console.log(`🧠 Gemini response received: "${aiResponse}"`);
 
           // Send the response
+          console.log("📤 Sending AI response to WhatsApp...");
           await message.reply(aiResponse);
-          console.log(`🤖 AI response sent: "${aiResponse}"`);
+          console.log(`✅ AI response successfully sent: "${aiResponse}"`);
         } catch (error) {
-          console.error("Error generating/sending AI response:", error);
+          console.error("❌ Error in AI response flow:", error);
         }
+      } else {
+        console.log(`⏭️ Decided NOT to respond to message from "${name}"`);
       }
     } else {
       console.log(
