@@ -49,8 +49,14 @@ client.on("message_create", async (message: any) => {
       await db.storeChat(chat.id._serialized, name, false);
     }
 
-    // Only store messages with actual content
-    if (message.body && message.body.trim().length > 0) {
+    // Only store messages with actual content and ignore status updates
+    if (
+      message.body &&
+      message.body.trim().length > 0 &&
+      message.type !== "protocol" &&
+      message.type !== "revoke" &&
+      message.type !== "e2e_notification"
+    ) {
       const messageData: Message = {
         id: message.id._serialized,
         chatId: chat.id._serialized,

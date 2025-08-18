@@ -1,6 +1,7 @@
 // @ts-ignore
 import { GoogleGenerativeAI } from "npm:@google/generative-ai@0.24.1";
 import { Message } from "./database.ts";
+import { buildWhatsAppPrompt } from "./prompts/index.ts";
 
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
@@ -25,15 +26,8 @@ export class GeminiService {
         groupName
       );
 
-      const prompt = `You are a helpful AI assistant in a WhatsApp conversation.
-
-${context}
-
-Current message: "${currentMessage}"
-
-Please provide a helpful, natural response. Keep it conversational and appropriate for the context. If this is a group chat, you can reference other participants naturally.
-
-Response:`;
+      // Generate prompt template
+      const prompt = buildWhatsAppPrompt(currentMessage, context);
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
