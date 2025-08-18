@@ -16,10 +16,14 @@ client.on("qr", (qr) => {
 });
 
 client.on("message_create", async (message) => {
-  const contact = await client.getContactById(message._data.from);
-  console.log(message._data);
-  console.log(contact);
-  console.log(message.body);
+  const contact = await message.getContact();
+  let name =
+    contact.pushname || contact.name || contact.number || contact.id.user;
+  if (message.fromMe && client.info) {
+    const myNumber = client.info.wid && client.info.wid.user;
+    name = client.info.pushname || name || myNumber;
+  }
+  console.log(`[${name}] ${message.body}`);
 });
 
 client.initialize();
