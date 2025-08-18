@@ -12,6 +12,7 @@ export interface Message {
   groupName?: string;
   messageType: string;
   embedding?: number[];
+  isAiGenerated?: boolean;
 }
 
 export class DatabaseService {
@@ -36,6 +37,7 @@ export class DatabaseService {
         group_name TEXT,
         message_type TEXT DEFAULT 'text',
         embedding BLOB,
+        is_ai_generated BOOLEAN DEFAULT FALSE,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -63,8 +65,8 @@ export class DatabaseService {
   async storeMessage(message: Message): Promise<void> {
     const stmt = this.db.prepare(`
       INSERT OR REPLACE INTO messages
-      (id, chat_id, author_id, author_name, body, timestamp, is_group, group_name, message_type, embedding)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, chat_id, author_id, author_name, body, timestamp, is_group, group_name, message_type, embedding, is_ai_generated)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run([
@@ -78,6 +80,7 @@ export class DatabaseService {
       message.groupName || null,
       message.messageType,
       message.embedding ? new Uint8Array(message.embedding) : null,
+      message.isAiGenerated ? 1 : 0,
     ]);
   }
 

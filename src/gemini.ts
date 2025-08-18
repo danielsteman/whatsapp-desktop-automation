@@ -7,6 +7,7 @@ export class GeminiService {
   private genAI: GoogleGenerativeAI;
   private model: any;
   private aiResponders: string[];
+  private respondedMessageIds: Set<string> = new Set();
 
   constructor(apiKey: string, aiResponders: string[]) {
     this.genAI = new GoogleGenerativeAI(apiKey);
@@ -68,12 +69,25 @@ export class GeminiService {
     return contextLines.join("\n");
   }
 
-  async shouldRespond(message: string, authorName: string): Promise<boolean> {
+  async shouldRespond(
+    messageId: string,
+    message: string,
+    authorName: string
+  ): Promise<boolean> {
+    // Don't respond to messages we've already responded to
+    if (this.respondedMessageIds.has(messageId)) {
+      return false;
+    }
+
     // Check if the author is in our AI responders list
     const shouldRespond = this.aiResponders.some(
       (responder) => authorName === responder || authorName.includes(responder)
     );
 
     return shouldRespond;
+  }
+
+  markMessageAsResponded(messageId: string): void {
+    this.respondedMessageIds.add(messageId);
   }
 }

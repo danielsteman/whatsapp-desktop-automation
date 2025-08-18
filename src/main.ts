@@ -50,12 +50,16 @@ client.on("message_create", async (message: any) => {
     }
 
     // Only store messages with actual content and ignore status updates
+    // Also ignore AI-generated responses to prevent loops
     if (
       message.body &&
       message.body.trim().length > 0 &&
       message.type !== "protocol" &&
       message.type !== "revoke" &&
-      message.type !== "e2e_notification"
+      message.type !== "e2e_notification" &&
+      !message.body.includes("🤖") &&
+      !message.body.includes("AI") &&
+      !message.body.includes("Sorry, I'm having trouble")
     ) {
       const messageData: Message = {
         id: message.id._serialized,
@@ -67,51 +71,63 @@ client.on("message_create", async (message: any) => {
         isGroup: chat.isGroup,
         groupName: chat.isGroup ? chat.name : undefined,
         messageType: message.type || "text",
+        isAiGenerated: false, // Human messages are not AI-generated
       };
 
       await db.storeMessage(messageData);
       console.log(`✅ Message stored in database`);
 
       // Check if we should generate an AI response
-      console.log(
-        `🔍 Checking if should respond to message from "${name}": "${message.body}"`
-      );
-
-      if (await gemini.shouldRespond(message.body, name)) {
-        console.log(`✅ Decided to respond to message from "${name}"`);
-
-        try {
-          console.log("🤖 Generating AI response...");
-
-          // Get conversation context
-          console.log(
-            `📚 Retrieving conversation context for chat: ${chat.id._serialized}`
-          );
-          const context = await db.getMessagesForContext(
-            chat.id._serialized,
-            20
-          );
-          console.log(`📚 Retrieved ${context.length} messages for context`);
-
-          // Generate AI response
-          console.log("🧠 Calling Gemini API...");
-          const aiResponse = await gemini.generateResponse(
-            message.body,
-            context,
-            chat.isGroup,
-            chat.isGroup ? chat.name : undefined
-          );
-          console.log(`🧠 Gemini response received: "${aiResponse}"`);
-
-          // Send the response
-          console.log("📤 Sending AI response to WhatsApp...");
-          await message.reply(aiResponse);
-          console.log(`✅ AI response successfully sent: "${aiResponse}"`);
-        } catch (error) {
-          console.error("❌ Error in AI response flow:", error);
-        }
+      // Don't respond to AI-generated messages (prevents infinite loops)
+      if (messageData.isAiGenerated) {
+        console.log(`⏭️ Skipping AI response check for AI-generated message`);
       } else {
-        console.log(`⏭️ Decided NOT to respond to message from "${name}"`);
+        console.log(
+          `🔍 Checking if should respond to message from "${name}": "${message.body}"`
+        );
+
+        if (
+          await gemini.shouldRespond(message.id._serialized, message.body, name)
+        ) {
+          console.log(`✅ Decided to respond to message from "${name}"`);
+
+          try {
+            console.log("🤖 Generating AI response...");
+
+            // Get conversation context
+            console.log(
+              `📚 Retrieving conversation context for chat: ${chat.id._serialized}`
+            );
+            const context = await db.getMessagesForContext(
+              chat.id._serialized,
+              20
+            );
+            console.log(`📚 Retrieved ${context.length} messages for context`);
+
+            // Generate AI response
+            console.log("🧠 Calling Gemini API...");
+            const aiResponse = await gemini.generateResponse(
+              message.body,
+              context,
+              chat.isGroup,
+              chat.isGroup ? chat.name : undefined
+            );
+            console.log(`🧠 Gemini response received: "${aiResponse}"`);
+
+            // Send the response
+            console.log("📤 Sending AI response to WhatsApp...");
+            await message.reply(aiResponse);
+            console.log(`✅ AI response successfully sent: "${aiResponse}"`);
+
+            // Mark this message as responded to prevent infinite loops
+            gemini.markMessageAsResponded(message.id._serialized);
+            console.log(`🔒 Message marked as responded to prevent loops`);
+          } catch (error) {
+            console.error("❌ Error in AI response flow:", error);
+          }
+        } else {
+          console.log(`⏭️ Decided NOT to respond to message from "${name}"`);
+        }
       }
     } else {
       console.log(
