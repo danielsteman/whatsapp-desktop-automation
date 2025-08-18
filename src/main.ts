@@ -43,21 +43,27 @@ client.on("message_create", async (message: any) => {
       await db.storeChat(chat.id._serialized, name, false);
     }
 
-    // Store the message
-    const messageData: Message = {
-      id: message.id._serialized,
-      chatId: chat.id._serialized,
-      authorId: contact.id._serialized,
-      authorName: name,
-      body: message.body,
-      timestamp: message.timestamp * 1000, // Convert to milliseconds
-      isGroup: chat.isGroup,
-      groupName: chat.isGroup ? chat.name : undefined,
-      messageType: message.type || "text",
-    };
+    // Only store messages with actual content
+    if (message.body && message.body.trim().length > 0) {
+      const messageData: Message = {
+        id: message.id._serialized,
+        chatId: chat.id._serialized,
+        authorId: contact.id._serialized,
+        authorName: name,
+        body: message.body,
+        timestamp: message.timestamp * 1000, // Convert to milliseconds
+        isGroup: chat.isGroup,
+        groupName: chat.isGroup ? chat.name : undefined,
+        messageType: message.type || "text",
+      };
 
-    await db.storeMessage(messageData);
-    console.log(`✅ Message stored in database`);
+      await db.storeMessage(messageData);
+      console.log(`✅ Message stored in database`);
+    } else {
+      console.log(
+        `⏭️ Skipping message without content (type: ${message.type})`
+      );
+    }
   } catch (error) {
     console.error("Error processing message:", error);
   }
