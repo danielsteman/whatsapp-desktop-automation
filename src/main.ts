@@ -23,7 +23,16 @@ client.on("message_create", async (message: any) => {
     const myNumber = client.info.wid && client.info.wid.user;
     name = client.info.pushname || name || myNumber;
   }
-  console.log(`[${name}] ${message.body}`);
+
+  // Check if message is in a group chat
+  const chat = await message.getChat();
+  if (chat.isGroup) {
+    const groupName = chat.name;
+    const authorName = name;
+    console.log(`[GROUP: ${groupName}] [${authorName}] ${message.body}`);
+  } else {
+    console.log(`[${name}] ${message.body}`);
+  }
 });
 
 client.initialize();
