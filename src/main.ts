@@ -1,5 +1,5 @@
-const { Client } = require("whatsapp-web.js");
-const qrcode = require("qrcode-terminal");
+import { Client } from "whatsapp-web.js";
+import qrcode from "qrcode-terminal";
 
 const client = new Client({
   puppeteer: {
@@ -11,11 +11,11 @@ client.on("ready", () => {
   console.log("Client is ready!");
 });
 
-client.on("qr", (qr) => {
+client.on("qr", (qr: string) => {
   qrcode.generate(qr, { small: true });
 });
 
-client.on("message_create", async (message) => {
+client.on("message_create", async (message: any) => {
   const contact = await message.getContact();
   let name =
     contact.pushname || contact.name || contact.number || contact.id.user;

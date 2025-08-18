@@ -1,0 +1,10 @@
+{
+    "tasks": {
+        "start": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run src/main.ts",
+        "dev": "deno run --allow-net --allow-read --allow-write --allow-env --allow-run --watch src/main.ts"
+    },
+    "imports": {
+        "whatsapp-web.js": "npm:whatsapp-web.js@^1.31.0",
+        "qrcode-terminal": "npm:qrcode-terminal@^0.12.0"
+    }
+}
