@@ -91,5 +91,5 @@ lerna-debug.log
 Thumbs.db
 
 # Puppeteer
-chrome-bin/**
+chrome-mac/**
 
