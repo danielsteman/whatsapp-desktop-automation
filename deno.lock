@@ -9,6 +9,8 @@
     "jsr:@std/encoding@1": "1.0.10",
     "jsr:@std/fmt@1": "1.0.8",
     "jsr:@std/fs@1": "1.0.19",
+    "jsr:@std/fs@1.0.19": "1.0.19",
+    "jsr:@std/fs@^1.0.19": "1.0.19",
     "jsr:@std/internal@^1.0.10": "1.0.10",
     "jsr:@std/internal@^1.0.9": "1.0.10",
     "jsr:@std/path@0.217": "0.217.0",
@@ -32,7 +34,7 @@
       "dependencies": [
         "jsr:@std/encoding",
         "jsr:@std/fmt",
-        "jsr:@std/fs",
+        "jsr:@std/fs@1",
         "jsr:@std/path@1"
       ]
     },
@@ -690,6 +692,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@std/dotenv@~0.225.5",
+      "jsr:@std/fs@^1.0.19",
       "npm:@google/generative-ai@~0.24.1",
       "npm:qrcode-terminal@0.12",
       "npm:whatsapp-web.js@^1.31.0"

@@ -3,24 +3,54 @@ import qrcode from "qrcode-terminal";
 import { DatabaseService, Message } from "./database.ts";
 import { GeminiService } from "./gemini.ts";
 import { loadConfig } from "./config.ts";
+import { WhatsAppSessionManager } from "./whatsapp-session.ts";
 
 // Load configuration
 const config = await loadConfig();
 
 const db = new DatabaseService();
 const gemini = new GeminiService(config.GEMINI_API_KEY, config.aiResponders);
+const sessionManager = new WhatsAppSessionManager();
+
 const client = new Client({
   puppeteer: {
     executablePath: "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
   },
+  // Use session data if available
+  session: sessionManager.getSession()?.data || undefined,
 });
 
 client.on("ready", () => {
   console.log("Client is ready!");
+
+  // Save session data for future use
+  if (client.info?.wid) {
+    // Get session data from the client's internal state
+    const sessionData =
+      (client as any).pupPage?.target()?._targetInfo?.targetId ||
+      client.info.wid._serialized;
+    sessionManager.saveSession(client.info.wid._serialized, {
+      wid: client.info.wid._serialized,
+      pushname: client.info.pushname,
+      timestamp: Date.now(),
+    });
+    console.log("💾 Session data saved for next startup");
+  }
 });
 
 client.on("qr", (qr: string) => {
+  console.log("📱 New QR code generated - please scan");
   qrcode.generate(qr, { small: true });
+});
+
+client.on("authenticated", (session: any) => {
+  console.log("🔐 WhatsApp authenticated successfully");
+  // Session will be saved when client is ready
+});
+
+client.on("auth_failure", (msg: string) => {
+  console.log("❌ WhatsApp authentication failed:", msg);
+  sessionManager.deleteSession();
 });
 
 client.on("message_create", async (message: any) => {

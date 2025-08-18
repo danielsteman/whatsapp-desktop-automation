@@ -15,7 +15,6 @@ export async function loadConfig(): Promise<Config> {
   }
 
   // Load AI responders configuration
-  // @ts-expect-error - Deno global
   const aiRespondersConfig = await Deno.readTextFile(
     "./src/config/ai-responders.json"
   );
