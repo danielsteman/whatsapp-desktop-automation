@@ -3,6 +3,7 @@ import { GeminiService } from "./gemini.ts";
 import { loadConfig } from "./config.ts";
 import { WhatsAppSessionManager } from "./whatsapp-session.ts";
 import { WhatsAppService } from "./whatsapp-service.ts";
+import process from "node:process";
 
 // Load configuration
 const config = await loadConfig();

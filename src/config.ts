@@ -1,4 +1,3 @@
-// @ts-ignore
 import { load } from "jsr:@std/dotenv@0.225.5";
 
 export interface Config {

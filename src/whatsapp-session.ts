@@ -1,4 +1,3 @@
-// @ts-ignore
 import { existsSync } from "jsr:@std/fs@1.0.19";
 
 export interface SessionData {

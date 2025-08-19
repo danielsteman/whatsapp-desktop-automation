@@ -13,3 +13,5 @@ Run app.
 ```bash
 deno task start
 ```
+
+Make sure to have Deno language server installed.
