@@ -1,4 +1,4 @@
-import { Client } from "whatsapp-web.js";
+import { Client, LocalAuth } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 import { DatabaseService, Message } from "./database.ts";
 import { GeminiService } from "./gemini.ts";
@@ -23,10 +23,9 @@ export class WhatsAppService {
     this.client = new Client({
       puppeteer: {
         executablePath: "chrome-mac/Chromium.app/Contents/MacOS/Chromium",
-        // Add user data directory for session persistence
-        userDataDir: "./chrome-user-data",
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
       },
-      // Add session persistence options
+      authStrategy: new LocalAuth(),
       restartOnAuthFail: true,
       takeoverOnConflict: true,
     });
