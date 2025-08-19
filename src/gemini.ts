@@ -90,4 +90,8 @@ export class GeminiService {
   markMessageAsResponded(messageId: string): void {
     this.respondedMessageIds.add(messageId);
   }
+
+  hasRespondedToMessage(messageId: string): boolean {
+    return this.respondedMessageIds.has(messageId);
+  }
 }

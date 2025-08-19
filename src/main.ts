@@ -91,6 +91,12 @@ client.on("message_create", async (message: any) => {
       !message.body.includes("AI") &&
       !message.body.includes("Sorry, I'm having trouble")
     ) {
+      // Skip all messages from me that are replies (these are AI-generated responses)
+      if (message.fromMe && message.hasQuotedMsg) {
+        console.log(`⏭️ Skipping AI-generated reply: "${message.body}"`);
+        return;
+      }
+
       const messageData: Message = {
         id: message.id._serialized,
         chatId: chat.id._serialized,
