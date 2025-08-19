@@ -2,22 +2,15 @@ import { Client, LocalAuth } from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 import { DatabaseService, Message } from "./database.ts";
 import { GeminiService } from "./gemini.ts";
-import { WhatsAppSessionManager } from "./whatsapp-session.ts";
 
 export class WhatsAppService {
   private client: Client;
   private db: DatabaseService;
   private gemini: GeminiService;
-  private sessionManager: WhatsAppSessionManager;
 
-  constructor(
-    db: DatabaseService,
-    gemini: GeminiService,
-    sessionManager: WhatsAppSessionManager
-  ) {
+  constructor(db: DatabaseService, gemini: GeminiService) {
     this.db = db;
     this.gemini = gemini;
-    this.sessionManager = sessionManager;
 
     // Initialize the WhatsApp client
     this.client = new Client({
@@ -52,7 +45,7 @@ export class WhatsAppService {
 
     this.client.on("auth_failure", (msg: string) => {
       console.log("❌ WhatsApp authentication failed:", msg);
-      this.sessionManager.deleteSession();
+      // Session will be handled automatically by LocalAuth
     });
 
     this.client.on("message_create", async (message: any) => {
@@ -194,14 +187,7 @@ export class WhatsAppService {
   }
 
   public async initialize(): Promise<void> {
-    // Check if we have a valid session
-    const savedSession = this.sessionManager.getSession();
-    if (savedSession) {
-      console.log("🔄 Attempting to use saved session...");
-    } else {
-      console.log("📱 No saved session found, will need QR code");
-    }
-
+    console.log("🚀 Initializing WhatsApp client...");
     await this.client.initialize();
   }
 

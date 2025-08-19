@@ -1,7 +1,6 @@
 import { DatabaseService } from "./database.ts";
 import { GeminiService } from "./gemini.ts";
 import { loadConfig } from "./config.ts";
-import { WhatsAppSessionManager } from "./whatsapp-session.ts";
 import { WhatsAppService } from "./whatsapp-service.ts";
 import process from "node:process";
 
@@ -11,8 +10,7 @@ const config = await loadConfig();
 // Initialize services
 const db = new DatabaseService();
 const gemini = new GeminiService(config.GEMINI_API_KEY, config.aiResponders);
-const sessionManager = new WhatsAppSessionManager();
-const whatsappService = new WhatsAppService(db, gemini, sessionManager);
+const whatsappService = new WhatsAppService(db, gemini);
 
 // Graceful shutdown
 process.on("SIGINT", async () => {
